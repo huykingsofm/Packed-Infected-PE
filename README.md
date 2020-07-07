@@ -105,7 +105,7 @@ Generating unpack code...
         Not enough memory to infect unpack shellcode
 Done~~
 ```
-*<p align = "center"> A fail example because not enough memory to infect shellcode. In this case, change mode0 to mode1 or mode2 </p>*
+*<p align = "center"> A fail example because of not enough memory to infect shellcode. In this case, change mode0 to mode1 or mode2 </p>*
 
 Same with the rest.
 # Folder structure
