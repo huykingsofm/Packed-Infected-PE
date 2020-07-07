@@ -50,7 +50,37 @@ MESBOXVERSION OPTIONS:
         -MBA            Using MessageBoxA - By default
         -MBW            Using MessageBoxW
 ```
+*<p align = "center"> Display help </p>*
+```
+> packer.exe ../examplePE/notepad.exe ../exampleInfectedPE/notepad-2-1.exe -mode1
+Checking Base Relocation Table...
+Generating shellcode...
+        Calculating shellcode size and position of important instructions...
+        Adjusting some instructions and put string to shellcode...
+        Encrypt shellcode with xor...
+        Using mode expand last section
+        Code cave found
+                Shell code Offset: 0x10e00      Length: 4096
+                Shell code RVA   : 0x1013a00
+        Infecting shellcode successfully~~
 
+Generating unpack code...
+        Calculating size and position of important instruction...
+        Finding function LoadLibrary and GetProcAddress in PE File...
+                RVA Of LoadLibrary: 0x10010c8
+                RVA Of GetProcAddress: 0x1001110
+        Using Message Box version A
+        Adjusting some instruction and put string to unpack shellcode...
+        Find code cave in PE File for unpack shellcode...
+        Code cave found
+                Unpack Offset: 0x10f40  Length: 3792
+                Unpack RVA: 0x13b40
+        Adjust Entry Point...
+        Infecting unpack shellcode to PE File...
+        Infecting unpack shellcode successfully~~
+Done~~
+```
+*<p align = "center"> A successfully example </p>*
 ```
 > packer.exe ../examplePE/notepad.exe ../exampleInfectedPE/notepad-2-0.exe
 Checking Base Relocation Table...
@@ -75,7 +105,8 @@ Generating unpack code...
         Not enough memory to infect unpack shellcode
 Done~~
 ```
-*<p align = "center"> A fail example </p>*
+*<p align = "center"> A fail example because not enough memory to infect shellcode. In this case, change mode0 to mode1 or mode2 </p>*
+
 Same with the rest.
 # Folder structure
 |Folder name|Function|
