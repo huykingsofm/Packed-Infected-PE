@@ -943,8 +943,9 @@ void printAllImportedSymbol(FILE *FStream){
     }
     free(Buffer);
 }
-
-/* int main(){
+#endif
+/*
+int main(){
 
     FILE *f = fopen("179906902", "rb");
     IMAGE_DOS_HEADER DOSHeader;
@@ -959,5 +960,5 @@ void printAllImportedSymbol(FILE *FStream){
     //printDOSHeader(DOSHeader);
     //printSectionHeaders(SectionHeaders, NTHeaders.FileHeader.NumberOfSections);
     return 0;
-} */
-#endif
+}
+*/

