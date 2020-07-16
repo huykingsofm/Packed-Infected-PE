@@ -108,6 +108,13 @@ Done~~
 *<p align = "center"> A fail example because of not enough memory to infect shellcode. In this case, change mode0 to mode1 or mode2 </p>*
 
 Same with the rest.
+
+## Common errors
+|Error|Cause|Fix|
+|:----|:----|:--|
+|Not enough memory to infect unpack shellcode|The available code cave in PE file is too small to infect the shellcode and unpacker into it.|Change mode0 to mode1 or mode2.|
+|No function load|The PE file's import table do not load the nessessary dll file or the dll file do not include nessessary function (example KERNEL32.dll, LoadLibrary function and GetProcAddress function). |Change to another infector (infectMessageBox, stableInfectMessageBox, packer). If this can not infect shellcode either, there is no way to fix.|
+|Other errors|The input file is invalid PE file, the path of output file do not exist, ...||
 # Folder structure
 |Folder name|Function|
 |:---------|:------|
